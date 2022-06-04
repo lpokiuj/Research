@@ -1,10 +1,8 @@
-const books = require('../models/book.model');
-
-const nanoid = require("nanoid").nanoid;
+const Book = require('../models/book.model');
 
 module.exports = {
 
-    createBook: (req, res) => {
+    createBook: async (req, res) => {
         // Error
         const errorMSG = {};
         if (!req.body.name) {
@@ -13,17 +11,14 @@ module.exports = {
             return res.status(400).json(errorMSG);
         }
 
-        const book = {
-            id: nanoid(),
+        const book = new Book({
             name: req.body.name,
             year: req.body.year,
             author: req.body.author,
             summary: req.body.summary,
-            insertedAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
+        });
 
-        books.push(book);
+        await book.save(book);
         const sendData = {
             status: "success",
             message: "Buku berhasil ditambahkan",
@@ -35,22 +30,21 @@ module.exports = {
         return res.status(201).send(sendData);
     },
 
-    getAll: (req, res) => {    
+    getAll: async (req, res) => {
+        const bookList = await Book.find({});    
         const sendMSG = {
             status: "success",
             data: {
-                books: books,
+                books: bookList,
             },
         };
     
         return res.status(200).send(sendMSG);
     },
 
-    getByID: (req, res) => {
+    getByID: async (req, res) => {
     
-        const book = books.find((c) => {
-            return c.id === req.params.id;
-        });
+        const book = await books.findByID(req.params.id).exec();    
     
         if (book) {
             return res.status(200).json({
@@ -65,11 +59,9 @@ module.exports = {
         }
     },
 
-    updateBook: (req, res) => {
+    updateBook: async (req, res) => {
         // Error not found (404)
-        const book = books.find((c) => {
-            return c.id === req.params.id;
-        });
+        const book = await Book.findByID(req.params.id).exec();   
     
         if (!book) {
             return res.status(404).json({
@@ -87,23 +79,21 @@ module.exports = {
         }
     
         // Success
-        for (let i = 0; i < books.length; i++) {
-            if (req.params.id === books[i].id) {
-                books[i].name = req.body.name;
-                books[i].year = req.body.year;
-                books[i].author = req.body.author;
-                books[i].summary = req.body.summary;
-                books[i].updatedAt = new Date().toISOString();
-            }
-        }
+        book.name = req.body.name;
+        book.year = req.body.year;
+        book.author = req.body.author;
+        book.summary = req.body.summary;
+        book.updatedAt = new Date().toISOString();
+        await book.save();
+
         return res.status(200).json({
             status: "success",
             message: "Buku berhasil diperbarui",
         });
     },
 
-    deleteBook: (req, res) => {
-        const book = books.find((c) => {
+    deleteBook: async (req, res) => {
+        const book = Book.find((c) => {
             return c.id === req.params.id;
         });
     
@@ -114,9 +104,7 @@ module.exports = {
             });
         }
     
-        const index = books.indexOf(book);
-        books.splice(index, 1);
-    
+        await Book.deleteOne({ _id: req.params.id });
         return res.status(200).json({
             status: "success",
             message: "Buku berhasil dihapus",
