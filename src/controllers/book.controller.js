@@ -12,11 +12,6 @@ module.exports = {
             errorMSG.message = "Gagal menambahkan buku. Mohon isi nama buku";
             return res.status(400).json(errorMSG);
         }
-        if (req.body.readPage > req.body.pageCount) {
-            errorMSG.status = "fail";
-            errorMSG.message = "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount";
-            return res.status(400).json(errorMSG);
-        }
 
         const book = {
             id: nanoid(),
@@ -28,15 +23,7 @@ module.exports = {
             updatedAt: new Date().toISOString(),
         };
 
-        const lengthObject = books.length;
         books.push(book);
-
-        if (lengthObject >= books.length) {
-            errorMSG.status = "error";
-            errorMSG.message = "Buku gagal ditambahkan";
-            return res.status(500).json(errorMSG);
-        }
-
         const sendData = {
             status: "success",
             message: "Buku berhasil ditambahkan",
