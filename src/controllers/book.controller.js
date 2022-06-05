@@ -3,7 +3,6 @@ const Book = require('../models/book.model');
 module.exports = {
 
     createBook: async (req, res) => {
-        // Error
         const errorMSG = {};
         if (!req.body.name) {
             errorMSG.status = "fail";
@@ -60,7 +59,6 @@ module.exports = {
     },
 
     updateBook: async (req, res) => {
-        // Error not found (404)
         const book = await Book.findByID(req.params.id).exec();   
     
         if (!book) {
@@ -69,8 +67,7 @@ module.exports = {
                 message: "Gagal memperbarui buku. Id tidak ditemukan",
             });
         }
-    
-        // Error fail (400)
+
         const errorMSG = {};
         if (!req.body.name) {
             errorMSG.status = "fail";
@@ -78,7 +75,6 @@ module.exports = {
             return res.status(400).json(errorMSG);
         }
     
-        // Success
         book.name = req.body.name;
         book.year = req.body.year;
         book.author = req.body.author;
